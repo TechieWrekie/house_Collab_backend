@@ -3,7 +3,7 @@ const res = require('express/lib/response')
 const database = require('./server/config/db')
 const cors = require('cors')
 const app = express()
-const PORT = 3004 || process.env
+const PORT = 443 || process.env
 const apiRoutes = require('./server/routes/apiRoutes')
 
 database.connectToDatabase()
