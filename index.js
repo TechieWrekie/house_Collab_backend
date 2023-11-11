@@ -20,9 +20,8 @@ app.use('/api', apiRoutes)
 
 
 
-const seed = require('./server/config/seed')
-seed.AdminCreate()
-.app.listen(PORT, () => {
+require('./server/config/seed')
+app.listen(PORT, () => {
     console.log("Server Listerning to port ", PORT)
 })
  

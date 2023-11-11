@@ -5,6 +5,8 @@ const dbPath = process.env.MONGO_URI;
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  connectTimeoutMS: 30000, 
+  socketTimeoutMS: 30000, 
 };
 
  exports.connectToDatabase = async () => {

@@ -1,6 +1,6 @@
 const User = require('../apis/user/userModel')
 
-exports.AdminCreate = User.findOne({email:"admin@gmail.com"}).then(userData => {
+User.findOne({email:"admin@gmail.com"}).then(userData => {
     if(userData==null){
         let userData = {
             userId: 1,
