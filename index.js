@@ -1,11 +1,12 @@
 const express = require('express')
 const res = require('express/lib/response')
-const db = require('./server/config/db')
+const database = require('./server/config/db')
 const cors = require('cors')
 const app = express()
-const PORT = 3004
+const PORT = 3004 || process.env
 const apiRoutes = require('./server/routes/apiRoutes')
 
+database.connectToDatabase()
 app.use(cors());
 
 app.use(express.static(__dirname + '/server/public/'));

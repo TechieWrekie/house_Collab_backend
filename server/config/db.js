@@ -1,8 +1,19 @@
-let mongoose = require('mongoose')
-const dbPath = "mongodb://localhost/HouseCollab"
-const options = { useNewUrlParser: true, useUnifiedTopology: true }
-mongoose.connect(dbPath, options).then(res => {
-    console.log("Db Connected")
-}).catch(err => {
-    console.log("Db Connect Err", err)
-})
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const dbPath = process.env.MONGO_URI;
+const options = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+};
+
+ exports.connectToDatabase = async () => {
+  try {
+    await mongoose.connect(dbPath, options);
+    console.log('Db Connected');
+  } catch (err) {
+    console.error('Db Connect Err', err);
+  }
+};
+
+
