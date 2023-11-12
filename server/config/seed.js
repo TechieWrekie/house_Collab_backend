@@ -1,12 +1,12 @@
 const User = require('../apis/user/userModel')
 
-User.findOne({email:"admin@gmail.com"}).then(userData => {
+Users.findOne({email:"admin@gmail.com"}).then(userData => {
     if(userData==null){
         let userData = {
             userId: 1,
             name: "Admin",
             email: "admin@gmail.com",
-            password: "Admin1234#",
+            password:"Admin1234#",
             userType: 1
         }
         let user = new User(userData)
