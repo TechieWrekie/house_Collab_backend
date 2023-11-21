@@ -3,36 +3,81 @@ const helper = require('../../utilities/helpers')
 
 
 exports.getAll = async (req, resp) => {
-    await Service.find(req.body).then(res => {
-        resp.send({ success: true, status: 200, message: "All Services loaded", data: res })
-    }).catch(err => {
-        resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-    })
+    try {
+        const services = await Service.find(req.body);
+
+        const servicesWithUrl = await Promise.all(
+            services.map(async (service) => {
+                const signedurl = await helper.generatePresignedUrl(
+                    process.env.AWS_BUCKET_NAME,
+                    service.image
+                );
+                return {
+                    ...service.toObject(),
+                    signedurl
+                }
+            })
+        )
+        resp.send({
+            success: true,
+            status: 200,
+            message: "All Services loaded",
+            data: servicesWithUrl,
+        });
+    }
+    catch (err) {
+        resp.send({
+            success: false,
+            status: 500,
+            message: !!err.message ? err.message : err,
+        });
+    }
 }
+
 
 
 
 exports.getSingle = async (req, resp) => {
-    let formData = req.body
-    let validation = ""
+    let formData = req.body;
+    let validation = "";
+
     if (!formData._id)
-        validation += "_id is required"
+        validation += "_id is required";
 
-    if (!!validation)
-        resp.send({ success: false, status: 422, message: validation })
+    if (!!validation) {
+        resp.send({ success: false, status: 422, message: validation });
+        return; // Exit the function early if there are validation errors
+    }
 
-    let query = { _id: formData._id }
-    await Service.findOne(query).then(res => {
-        if (!!res) {
-            resp.send({ success: true, status: 200, message: "Service loaded Successfully", data: res })
+    let query = { _id: formData._id };
+
+    try {
+        const service = await Service.findOne(query);
+
+        if (!!service) {
+            // Generate a pre-signed URL for the S3 object
+            const signedUrl = await helper.generatePresignedUrl(
+                process.env.AWS_BUCKET_NAME,
+                service.image
+            );
+
+            resp.send({
+                success: true,
+                status: 200,
+                message: "Service loaded Successfully",
+                data: { ...service.toObject(), signedUrl },
+            });
+        } else {
+            resp.send({ success: false, status: 404, message: "No Service Found" });
         }
-        else
-            resp.send({ success: false, status: 404, message: "No Service Found" })
-    }).catch(err => {
-        resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-    })
-
-}
+    } catch (err) {
+        resp.send({
+            success: false,
+            status: 500,
+            message: !!err.message ? err.message : err,
+        });
+    }
+};
 
 
 
@@ -41,8 +86,8 @@ exports.addService = async (req, resp) => {
     let validation = ""
     if (!formData.name)
         validation += "name is required,"
-    if (!formData.image)
-        validation += "image is required,"
+    if (!req.file || !req.file.fieldname)
+        validation += "image is required, ";
 
 
     if (!!validation)
@@ -52,7 +97,7 @@ exports.addService = async (req, resp) => {
         let serviceData = {
             serviceId: total + 1,
             name: formData.name,
-            image: "service/" + formData.image
+            image:req.file.key,
         }
         let service = new Service(serviceData)
         let prevService = await Service.findOne({ name: formData.name })
@@ -64,6 +109,7 @@ exports.addService = async (req, resp) => {
 
             }).catch(err => {
                 resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
+
             })
     }
 
@@ -85,9 +131,9 @@ exports.updateService = async (req, resp) => {
             if (!!res) {
                 if (!!formData.name)
                     res.name = formData.name
-                if (!!formData.image){
+                if (!!req.file || !!req.file.fieldname){
                     helper.unlinkImage(res.image)
-                    res.image = "service/" + formData.image
+                    res.image = req.file.key
                 }
                 let id = res._id
                 let prevService = await Service.findOne({ $and: [{ name: res.name }, { _id: { $ne: id } }] })
@@ -113,6 +159,7 @@ exports.updateService = async (req, resp) => {
 
 
 
+
 exports.changeStatus = async (req, resp) => {
     let formData = req.body
     let validation = ""
@@ -128,13 +175,13 @@ exports.changeStatus = async (req, resp) => {
             if (!!res) {
                 if (!!formData.status)
                     res.status = formData.status
-                
-                    res.save().then(res => {
-                        resp.send({ success: true, status: 200, message: "service Status Changed Successfully", data: res })
 
-                    }).catch(err => {
-                        resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-                    })
+                res.save().then(res => {
+                    resp.send({ success: true, status: 200, message: "service Status Changed Successfully", data: res })
+
+                }).catch(err => {
+                    resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
+                })
             }
             else
                 resp.send({ success: false, status: 404, message: "No service Found" })

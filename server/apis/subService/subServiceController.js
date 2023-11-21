@@ -3,14 +3,25 @@ const helper = require('../../utilities/helpers')
 
 
 exports.getAll = async (req, resp) => {
-    await SubService.find(req.body)
-        .populate("serviceId")
-        .populate("vendorId")
-        .then(res => {
-            resp.send({ success: true, status: 200, message: "All SubServices loaded", data: res })
-        }).catch(err => {
-            resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
+    const subservices = await SubService.find(req.body).populate("serviceId").populate("vendorId")
+    const subservicesWithUrl = await Promise.all(
+        subservices.map(async (subservice) => {
+            const signedUrl = await helper.generatePresignedUrl(
+                process.env.AWS_BUCKET_NAME,
+                subservice.name
+            )
+            return {
+                ...subservice.toObject(),
+                signedUrl
+            }
         })
+    )
+    resp.send({
+        success: true,
+        status: 200,
+        message: "All SubServices loaded",
+        data: subservicesWithUrl,
+    })
 }
 
 
@@ -23,23 +34,34 @@ exports.getSingle = async (req, resp) => {
 
     if (!!validation)
         resp.send({ success: false, status: 422, message: validation })
-    else {
+    try {
         let query = { _id: formData._id }
-        await SubService.findOne(query)
+        const subservie = await SubService.findOne(query)
             .populate("serviceId")
-            .populate("vendorId").then(res => {
-                if (!!res) {
-                    resp.send({ success: true, status: 200, message: "SubService loaded Successfully", data: res })
-                }
-                else
-                    resp.send({ success: false, status: 404, message: "No SubService Found" })
-            }).catch(err => {
-                resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-            })
+            .populate("vendorId")
+        if (!!subservie) {
+            const signedUrl = await helper.generatePresignedUrl(
+                process.env.AWS_BUCKET_NAME,
+                subservie.name
+            );
+            resp.send({
+                success: true,
+                status: 200,
+                message: "Sub service loaded Successfully",
+                data: { ...subservie.toObject(), signedUrl },
+            });
+        } else {
+            resp.send({ success: false, status: 404, message: "No Service Found" });
+        }
+    } catch (err) {
+        resp.send({
+            success: false,
+            status: 500,
+            message: !!err.message ? err.message : err,
+        });
     }
+};
 
-
-}
 
 
 
@@ -48,7 +70,7 @@ exports.addSubService = async (req, resp) => {
     let validation = ""
     if (!formData.name)
         validation += "name is required,"
-    if (!formData.image)
+    if (!req.file || !req.file.fieldname)
         validation += "image is required,"
     if (!formData.serviceId)
         validation += "serviceId is required,"
@@ -69,15 +91,15 @@ exports.addSubService = async (req, resp) => {
             vendorId: formData.vendorId,
             name: formData.name,
             description: formData.description,
-            image: "subService/" + formData.image
+            image: req.file.key
         }
         let subService = new SubService(subServiceData)
-            subService.save().then(res => {
-                resp.send({ success: true, status: 200, message: "SubService added Successfully", data: res })
+        subService.save().then(res => {
+            resp.send({ success: true, status: 200, message: "SubService added Successfully", data: res })
 
-            }).catch(err => {
-                resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-            })
+        }).catch(err => {
+            resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
+        })
     }
 }
 
@@ -96,9 +118,9 @@ exports.updateSubService = async (req, resp) => {
             if (!!res) {
                 if (!!formData.name)
                     res.name = formData.name
-                if (!!formData.image){
+                if (!!req.file || !!req.file.fieldname) {
                     helper.unlinkImage(res.image)
-                    res.image = "subService/" + formData.image
+                    res.image = req.file.key
                 }
                 if (!!formData.serviceId)
                     res.serviceId = formData.serviceId
@@ -138,13 +160,13 @@ exports.changeStatus = async (req, resp) => {
             if (!!res) {
                 if (!!formData.status)
                     res.status = formData.status
-                
-                    res.save().then(res => {
-                        resp.send({ success: true, status: 200, message: "SubService Status Changed Successfully", data: res })
 
-                    }).catch(err => {
-                        resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-                    })
+                res.save().then(res => {
+                    resp.send({ success: true, status: 200, message: "SubService Status Changed Successfully", data: res })
+
+                }).catch(err => {
+                    resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
+                })
             }
             else
                 resp.send({ success: false, status: 404, message: "No SubService Found" })
