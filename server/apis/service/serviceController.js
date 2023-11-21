@@ -9,7 +9,7 @@ exports.getAll = async (req, resp) => {
         const servicesWithUrl = await Promise.all(
             services.map(async (service) => {
                 const signedurl = await helper.generatePresignedUrl(
-                    process.env.AWS_BUCKET_NAME,
+                    process.env.BUCKET_NAME,
                     service.image
                 );
                 return {
@@ -57,7 +57,7 @@ exports.getSingle = async (req, resp) => {
         if (!!service) {
             // Generate a pre-signed URL for the S3 object
             const signedUrl = await helper.generatePresignedUrl(
-                process.env.AWS_BUCKET_NAME,
+                process.env.BUCKET_NAME,
                 service.image
             );
 

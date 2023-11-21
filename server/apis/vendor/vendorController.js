@@ -13,7 +13,7 @@ exports.getAll = async (req, resp) => {
         const vendrosWithUrl = await Promise.all(
             vendors.map(async (vendor) => {
                 const signedUrl = await helper.generatePresignedUrl(
-                    process.env.AWS_BUCKET_NAME,
+                    process.env.BUCKET_NAME,
                     vendor.image
                 )
                 return {
@@ -51,7 +51,7 @@ exports.getSingle = async (req, resp) => {
         const vendor = await Vendor.findOne(query).populate('serviceId')
         if (!!vendor) {
             const signedUrl = await helper.generatePresignedUrl(
-                process.env.AWS_BUCKET_NAME,
+                process.env.BUCKET_NAME,
                 vendor.image
             )
             resp.send({

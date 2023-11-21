@@ -7,7 +7,7 @@ exports.getAll = async (req, resp) => {
     const subservicesWithUrl = await Promise.all(
         subservices.map(async (subservice) => {
             const signedUrl = await helper.generatePresignedUrl(
-                process.env.AWS_BUCKET_NAME,
+                process.env.BUCKET_NAME,
                 subservice.name
             )
             return {
@@ -41,7 +41,7 @@ exports.getSingle = async (req, resp) => {
             .populate("vendorId")
         if (!!subservie) {
             const signedUrl = await helper.generatePresignedUrl(
-                process.env.AWS_BUCKET_NAME,
+                process.env.BUCKET_NAME,
                 subservie.name
             );
             resp.send({
