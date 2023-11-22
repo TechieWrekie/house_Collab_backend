@@ -8,7 +8,7 @@ exports.getAll = async (req, resp) => {
         subservices.map(async (subservice) => {
             const signedUrl = await helper.generatePresignedUrl(
                 process.env.BUCKET_NAME,
-                subservice.name
+                subservice.image
             )
             return {
                 ...subservice.toObject(),
