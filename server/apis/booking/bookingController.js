@@ -5,8 +5,7 @@ const helper = require('../../utilities/helpers')
 exports.getAll = async (req, resp) => {
     // if (!!req.decoded && req.decoded.userType != 1)
     //     req.body.subServiceId = req.decoded._id
-    await Booking.find(req.body).populate("vendorId")
-        .populate("subServiceId").populate("userId").then(res => {
+    await Booking.find(req.body).populate("vendorId").populate("subServiceId").populate("userId").then(res => {
             resp.send({ success: true, status: 200, message: "All Bookings loaded", data: res })
         }).catch(err => {
             resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
