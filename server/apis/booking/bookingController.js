@@ -5,7 +5,11 @@ const helper = require('../../utilities/helpers')
 exports.getAll = async (req, resp) => {
     // if (!!req.decoded && req.decoded.userType != 1)
     //     req.body.subServiceId = req.decoded._id
-    await Booking.find(req.body).populate("subServiceId").populate("userId").populate("vendorId").then(res => {
+    await Booking.find(req.body)
+        .populate("subServiceId")
+        .populate("userId")
+        .populate("vendorId")
+        .then(res => {
             resp.send({ success: true, status: 200, message: "All Bookings loaded", data: res })
         }).catch(err => {
             resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
@@ -69,30 +73,30 @@ exports.addBooking = async (req, resp) => {
         resp.send({ success: false, status: 422, message: validation })
     else {
 
-        
-            let total = await Booking.countDocuments()
-            let bookingData = {
-                bookingId: total + 1,
-                vendorId: formData.vendorId,
-                subServiceId: formData.subServiceId,
-                userId: formData.userId,
-                dateOfBooking: formData.dateOfBooking,
-                cost: formData.cost,
-                description: formData.description,
-                name: formData.name,
-                address: formData.address,
-                contact: formData.contact
-            }
-            
-            let booking = new Booking(bookingData)
-            booking.save().then(res => {
-                resp.send({ success: true, status: 200, message: "Booking added Successfully", data: res })
 
-            }).catch(err => {
-                resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-            })
+        let total = await Booking.countDocuments()
+        let bookingData = {
+            bookingId: total + 1,
+            vendorId: formData.vendorId,
+            subServiceId: formData.subServiceId,
+            userId: formData.userId,
+            dateOfBooking: formData.dateOfBooking,
+            cost: formData.cost,
+            description: formData.description,
+            name: formData.name,
+            address: formData.address,
+            contact: formData.contact
+        }
 
-        
+        let booking = new Booking(bookingData)
+        booking.save().then(res => {
+            resp.send({ success: true, status: 200, message: "Booking added Successfully", data: res })
+
+        }).catch(err => {
+            resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
+        })
+
+
     }
 }
 
@@ -157,13 +161,13 @@ exports.changeStatus = async (req, resp) => {
             if (!!res) {
                 if (!!formData.bookingStatus)
                     res.bookingStatus = formData.bookingStatus
-                
-                    res.save().then(res => {
-                        resp.send({ success: true, status: 200, message: "Booking Status Changed Successfully", data: res })
 
-                    }).catch(err => {
-                        resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
-                    })
+                res.save().then(res => {
+                    resp.send({ success: true, status: 200, message: "Booking Status Changed Successfully", data: res })
+
+                }).catch(err => {
+                    resp.send({ success: false, status: 500, message: !!err.message ? err.message : err })
+                })
             }
             else
                 resp.send({ success: false, status: 404, message: "No Booking Found" })
