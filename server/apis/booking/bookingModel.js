@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const bookingSchema = mongoose.Schema({
     bookingId: { type: Number, default: 0 },
-    vendorId: { type: mongoose.Schema.Types.ObjectId, default: null, ref: "user" },
+    vendorId: { type: mongoose.Schema.Types.ObjectId, default: null, ref: "vendor" },
     subServiceId: { type: mongoose.Schema.Types.ObjectId, default: null, ref: "subService" },
     
     userId: { type: mongoose.Schema.Types.ObjectId, default: null, ref: "user" },
