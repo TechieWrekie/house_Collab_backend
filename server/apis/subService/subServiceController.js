@@ -27,34 +27,39 @@ exports.getAll = async (req, resp) => {
 
 
 exports.getSingle = async (req, resp) => {
-    let formData = req.body
-    let validation = ""
-    if (!formData._id)
-        validation += "_id is required"
-
-    if (!!validation)
-        resp.send({ success: false, status: 422, message: validation })
     try {
-        let query = { _id: formData._id }
-        const subservie = await SubService.findOne(query)
-            .populate("serviceId")
-            .populate("vendorId")
-        if (!!subservie) {
-            const signedUrl = await helper.generatePresignedUrl(
-                process.env.BUCKET_NAME,
-                subservie.name
-            );
-            resp.send({
-                success: true,
-                status: 200,
-                message: "Sub service loaded Successfully",
-                data: { ...subservie.toObject(), signedUrl },
-            });
+        let formData = req.body;
+        let validation = "";
+        if (!formData._id) {
+            validation += "_id is required";
+        }
+
+        if (!!validation) {
+            resp.status(422).send({ success: false, status: 422, message: validation });
         } else {
-            resp.send({ success: false, status: 404, message: "No Service Found" });
+            let query = { _id: formData._id };
+            const subservie = await SubService.findOne(query)
+                .populate("serviceId")
+                .populate("vendorId");
+
+            if (!!subservie) {
+                const signedUrl = await helper.generatePresignedUrl(
+                    process.env.BUCKET_NAME,
+                    subservie.name
+                );
+
+                resp.send({
+                    success: true,
+                    status: 200,
+                    message: "Sub service loaded Successfully",
+                    data: { ...subservie.toObject(), signedUrl },
+                });
+            } else {
+                resp.status(404).send({ success: false, status: 404, message: "No Service Found" });
+            }
         }
     } catch (err) {
-        resp.send({
+        resp.status(500).send({
             success: false,
             status: 500,
             message: !!err.message ? err.message : err,
