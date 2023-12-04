@@ -47,7 +47,7 @@ exports.getSingle = async (req, resp) => {
         if (!!validation)
             resp.send({ success: false, status: 422, message: validation })
 
-        let query = { userId: formData._id }
+        let query = { userId: formData.userId }
         const vendor = await Vendor.findOne(query).populate('serviceId')
         if (!!vendor) {
             const signedUrl = await helper.generatePresignedUrl(
