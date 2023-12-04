@@ -58,7 +58,7 @@ exports.getSingle = async (req, resp) => {
     if (!!validation)
         resp.send({ success: false, status: 422, message: validation })
 
-    let query = { _id: formData._id }
+    let query = { userId: formData._userId }
     await User.findOne(query).then(res => {
         if (!!res) {
             resp.send({ success: true, status: 200, message: "User loaded Successfully", data: res })
