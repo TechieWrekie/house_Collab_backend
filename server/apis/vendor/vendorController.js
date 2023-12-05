@@ -172,7 +172,7 @@ exports.updateVendor = async (req, resp) => {
                     res.city = formData.city
                 if (!!formData.aadharNo)
                     res.aadharNo = formData.aadharNo
-                if (!!req.file || !!req.file.fieldname) {
+                if (!!req.file ) {
                     helper.unlinkImage(res.image)
                     res.image = req.file.key
                 }
