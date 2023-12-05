@@ -86,7 +86,7 @@ exports.addService = async (req, resp) => {
     let validation = ""
     if (!formData.name)
         validation += "name is required,"
-    if (!req.file || !req.file.fieldname)
+    if (!req.file )
         validation += "image is required, ";
 
 
@@ -131,7 +131,7 @@ exports.updateService = async (req, resp) => {
             if (!!res) {
                 if (!!formData.name)
                     res.name = formData.name
-                if (!!req.file || !!req.file.fieldname){
+                if (!!req.file ){
                     helper.unlinkImage(res.image)
                     res.image = req.file.key
                 }

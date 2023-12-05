@@ -86,7 +86,7 @@ exports.addVendor = async (req, resp) => {
         validation += "dob is required,"
     if (!formData.aadharNo)
         validation += "aadharNo is required,"
-    if (!req.file || !req.file.fieldname)
+    if (!req.file )
         validation += "image is required,"
     if (!formData.gender)
         validation += "gender is required,"
