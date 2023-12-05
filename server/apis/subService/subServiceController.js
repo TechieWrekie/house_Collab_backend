@@ -45,7 +45,7 @@ exports.getSingle = async (req, resp) => {
             if (!!subservie) {
                 const signedUrl = await helper.generatePresignedUrl(
                     process.env.BUCKET_NAME,
-                    subservie.name
+                    subservie.image
                 );
 
                 resp.send({
